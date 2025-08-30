@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Barcode Order System</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #orders { margin-top: 20px; }
+    .notification { color: green; font-weight: bold; margin-top: 10px; }
+    .error { color: red; font-weight: bold; margin-top: 10px; }
+    button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🎯 Barcode Order System</h1>
+  <input type="text" id="barcodeInput" placeholder="Scan barcode here" autofocus />
+  <button onclick="scanBarcode()">Scan</button>
+  <div id="notification" class="notification"></div>
+  <div id="orders"></div>
+  <button onclick="showAllOrders()">📋 View All Orders</button>
+
+  <script>
+    const people = {
+      P001: "Elliot", P002: "Béatrice", P003: "Jacob", P004: "Gabou",
+      P005: "Jeanne", P006: "Thomas", P007: "Émile", P008: "Andrée",
+      P009: "Daniel", P010: "Sophie", P011: "Eric", P012: "Marie-Claude",
+      P013: "Bernard", P014: "Luc", P015: "Maryse", P016: "Annaël"
+    };
+
+    const food = {
+      F001: { name: "Popcorn", price: 6 },
+      F002: { name: "Chocolate", price: 2 },
+      F003: { name: "Candy", price: 2 },
+      F004: { name: "Drink", price: 2 }
+    };
+
+    const balances = {};
+    const orders = {};
+    let currentUser = null;
+
+    for (let id in people) {
+      balances[id] = 10;
+      orders[id] = [];
+    }
+
+    function scanBarcode() {
+      const code = document.getElementById("barcodeInput").value.trim();
+      const note = document.getElementById("notification");
+      document.getElementById("barcodeInput").value = "";
+
+      if (people[code]) {
+        currentUser = code;
+        note.textContent = `✅ Logged in as ${people[code]}`;
+        buzz();
+      } else if (food[code]) {
+        if (!currentUser) {
+          note.textContent = "❌ No person selected. Scan a person first.";
+          return;
+        }
+        const item = food[code];
+        if (balances[currentUser] >= item.price) {
+          orders[currentUser].push(item.name);
+          balances[currentUser] -= item.price;
+          note.textContent = `✅ Added ${item.name} to ${people[currentUser]}'s order`;
+          buzz();
+        } else {
+          note.textContent = `❌ Not enough balance for ${item.name}`;
+        }
+      } else {
+        note.textContent = "❌ Unknown barcode";
+      }
+    }
+
+    function showAllOrders() {
+      const output = document.getElementById("orders");
+      output.innerHTML = "<h2>📋 All Orders</h2>";
+      for (let id in people) {
+        output.innerHTML += `<p><strong>${people[id]}</strong>: ${orders[id].join(", ") || "No items"} — 💰 $${balances[id].toFixed(2)}</p>`;
+      }
+    }
+
+    function buzz() {
+      if (navigator.vibrate) navigator.vibrate(100);
+    }
+  </script>
+</body>
+</html>
